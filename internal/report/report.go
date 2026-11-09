@@ -44,7 +44,11 @@ func Text(w io.Writer, r cutover.Result) error {
 	writeServers(ew, "old", r.Old, " (from "+r.OldSource.String()+")")
 	writeServers(ew, "new", r.New, "")
 	if p := r.Parent; p != nil {
-		ew.printf("parent     %s NS %s (TTL %d)", p.Server.Addr, joinNames(p.NS), p.NSTTL)
+		ew.printf("parent     ")
+		if p.Zone != "" {
+			ew.printf("%s ", p.Zone)
+		}
+		ew.printf("%s NS %s (TTL %d)", p.Server.Addr, joinNames(p.NS), p.NSTTL)
 		if len(p.DS) > 0 {
 			tags := make([]string, 0, len(p.DS))
 			for _, d := range p.DS {
