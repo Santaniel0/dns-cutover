@@ -57,6 +57,20 @@ type Response struct {
 	TCP bool
 }
 
+// Referral reports whether the reply hands the question off to a delegated
+// child zone instead of answering it.
+func (r Response) Referral() bool {
+	if r.Authoritative || r.Rcode != RcodeSuccess || len(r.Answer) > 0 {
+		return false
+	}
+	for _, rec := range r.Authority {
+		if rec.Header().Rrtype == dns.TypeNS {
+			return true
+		}
+	}
+	return false
+}
+
 // QueryError describes a query that got no usable reply.
 type QueryError struct {
 	Server   Server
