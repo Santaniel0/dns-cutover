@@ -181,9 +181,9 @@ type Result struct {
 	Parent    *delegation.Parent
 	Inventory inventory.Inventory
 	Stats     compare.Stats
-	Findings       []finding.Finding
-	Queries        int64
-	Elapsed        time.Duration
+	Findings  []finding.Finding
+	Queries   int64
+	Elapsed   time.Duration
 }
 
 // Count returns the number of findings of a severity that are not ignored.

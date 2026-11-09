@@ -1,0 +1,75 @@
+zone       example.test.
+old        ns1.olddns.test. 127.0.0.1:PORT (from --old)
+new        ns1.newdns.test. 127.0.0.1:PORT
+           ns2.newdns.test. 127.0.0.1:PORT
+parent     127.0.0.1:PORT NS ns1.olddns.test., ns2.olddns.test. (TTL 172800), DS 29212/13/2 (TTL 86400)
+inventory  12 names: 8 zone-file, 1 names-file, 3 probe (139 labels probed)
+compared   86 questions, 15 RRsets, 6 identical; 546 queries in TIME
+
+BLOCKERS (7)
+  MISSING         _autodiscover._tcp.example.test. SRV
+                  old  0 0 443 autodiscover.mailhost.test.
+                  new  (none)
+  MISSING         _dmarc.example.test. TXT  on ns2.newdns.test.
+                  old  "v=DMARC1; p=quarantine; rua=mailto:dmarc@example.t...
+                  new  (none)
+  MISSING         mail._domainkey.example.test. TXT
+                  old  "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB...
+                  new  (none)
+  DIFFERENT       api.example.test. A
+                  old  192.0.2.30
+                       192.0.2.31
+                  new  192.0.2.30
+  PROXIED-TARGET  mail.example.test. A
+                  old  192.0.2.25
+                  new  104.21.48.11
+                  MX target of example.test.; clients connecting to proxy
+                  addresses will not reach the server (the proxy only passes
+                  HTTP/HTTPS)
+  APEX-NS         example.test. NS
+                  new  ns1.newdns.test.
+                       ns1.olddns.test.
+                       ns2.newdns.test.
+                  the new zone still lists the old nameservers
+                  ns1.olddns.test. at the apex; resolvers that take the zone's
+                  own NS set will keep going back to the old provider
+  DNSSEC          example.test. DS
+                  old  29212 13 2 DF74CEA5E9F8F95056E8245A1FD23D7728BE6997...
+                  the parent publishes DS but the new zone is unsigned;
+                  validating resolvers will return SERVFAIL for the whole
+                  domain. Remove the DS at the registrar and wait out its TTL
+                  of 1d (86400s) before changing NS
+
+WARNINGS (3)
+  EXTRA           staging.example.test. A
+                  old  (none)
+                  new  10.0.0.5
+  TTL             example.test. A
+                  ttl  3600 on old, 300 on new
+                  data 192.0.2.10
+  SERIAL          example.test. SOA
+                  new servers return different SOA serials
+                  (ns1.newdns.test.=2026110902, ns2.newdns.test.=2026110901);
+                  one of them has not caught up yet
+
+INFO (4)
+  PROXIED         www.example.test. CNAME
+                  old  example.test.
+                  new  104.21.48.10
+                  answered with proxy addresses instead of the CNAME; HTTP(S)
+                  goes through the proxy, other protocols do not reach the
+                  target
+  TIMING          example.test. A
+                  largest TTL on the old servers is 1h (3600s): a record
+                  changed during the move can be served stale that long after
+                  the switch
+  TIMING          example.test. NS
+                  parent NS TTL is 2d (172800s): after the switch some
+                  resolvers keep asking the old servers that long, so leave
+                  the old zone unchanged until then
+  TIMING          example.test. SOA
+                  negative-caching TTL of the new zone is 5m (300s): a name
+                  missing at the switch stays missing in caches that long
+                  after it is added
+
+RESULT: NOT READY (7 blockers, 3 warnings, 4 info)

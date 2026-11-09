@@ -1,0 +1,34 @@
+zone       example.test.
+old        ns1.olddns.test. 127.0.0.1:PORT (from --old)
+new        ns1.newdns.test. 127.0.0.1:PORT
+           ns2.newdns.test. 127.0.0.1:PORT
+parent     127.0.0.1:PORT NS ns1.olddns.test., ns2.olddns.test. (TTL 172800)
+inventory  12 names: 8 zone-file, 1 names-file, 3 probe (139 labels probed)
+compared   86 questions, 15 RRsets, 12 identical; 546 queries in TIME
+
+WARNINGS (1)
+  EXTRA           staging.example.test. A
+                  old  (none)
+                  new  10.0.0.5
+
+INFO (4)
+  PROXIED         www.example.test. CNAME
+                  old  example.test.
+                  new  104.21.48.10
+                  answered with proxy addresses instead of the CNAME; HTTP(S)
+                  goes through the proxy, other protocols do not reach the
+                  target
+  TIMING          example.test. A
+                  largest TTL on the old servers is 1h (3600s): a record
+                  changed during the move can be served stale that long after
+                  the switch
+  TIMING          example.test. NS
+                  parent NS TTL is 2d (172800s): after the switch some
+                  resolvers keep asking the old servers that long, so leave
+                  the old zone unchanged until then
+  TIMING          example.test. SOA
+                  negative-caching TTL of the new zone is 5m (300s): a name
+                  missing at the switch stays missing in caches that long
+                  after it is added
+
+RESULT: READY (0 blockers, 1 warning, 4 info)

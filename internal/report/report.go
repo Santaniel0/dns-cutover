@@ -81,9 +81,16 @@ func Text(w io.Writer, r cutover.Result) error {
 		}
 	}
 
-	ew.printf("\nRESULT: %s (%d blockers, %d warnings, %d info)\n",
-		r.Verdict, r.Count(finding.Blocker), r.Count(finding.Warning), r.Count(finding.Info))
+	ew.printf("\nRESULT: %s (%s, %s, %d info)\n", r.Verdict,
+		plural(r.Count(finding.Blocker), "blocker"), plural(r.Count(finding.Warning), "warning"), r.Count(finding.Info))
 	return ew.err
+}
+
+func plural(n int, word string) string {
+	if n == 1 {
+		return "1 " + word
+	}
+	return fmt.Sprintf("%d %ss", n, word)
 }
 
 func writeServers(ew *errWriter, label string, servers []dnsq.Server, suffix string) {
