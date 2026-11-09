@@ -1,0 +1,19 @@
+; Zone at the new provider (as imported).
+$ORIGIN example.test.
+$TTL 3600
+@                    IN SOA   ns1.newdns.test. hostmaster.example.test. 2026110901 7200 3600 1209600 300
+@                    IN NS    ns1.newdns.test.
+@                    IN NS    ns2.newdns.test.
+@                    IN NS    ns1.olddns.test.
+@               300  IN A     192.0.2.10
+@                    IN MX    10 mail.example.test.
+@                    IN TXT   "v=spf1 mx include:_spf.mailhost.test -all"
+@                    IN CAA   0 issue "letsencrypt.org"
+; proxied by the provider: the CNAME is answered with proxy addresses
+www                  IN A     104.21.48.10
+mail                 IN A     104.21.48.11
+api                  IN A     192.0.2.30
+crm                  IN CNAME crm.saas-vendor.test.
+billing              IN A     192.0.2.50
+staging              IN A     10.0.0.5
+selector1._domainkey IN TXT   ( "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEALwx9Sp4jbF8uAt534Bj+8TR+Nl/51ilRpvLX7k3N6ylebGY3lJ5r3LPG+BYwL7JAKJHYdCJMUVuiesQtdiON3TBV9LIUDiX+nO2vPA9jQT7STd+M9OSdJqeDr5+xc7tkwq19yugGc4" "AvGj8A1t0LMvUSHQxnIRFuHLMxAUzMya17alyrmm2nNsPS3p1A4ET9gDSbTPRwKcnZ3lUJCImvqr66zl1JSF40pddfdbq92GkVPVts4d/lazR/DWd5S/c5BGzbMBHzjVjwY8mH8c6Syyrr8PdjbvWOWVFexq7h/X88lDmCjM0+96G/Pzl+lcDc/NmCY43+cgacyw==" )

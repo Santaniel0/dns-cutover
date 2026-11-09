@@ -58,6 +58,20 @@ func (n Name) FirstLabel() string {
 	return labels[0]
 }
 
+// ParseRelative reads a name the way zone files do: "@" is the zone itself,
+// a name ending in a dot is absolute, anything else is relative to zone.
+func ParseRelative(s string, zone Name) (Name, error) {
+	s = strings.TrimSpace(s)
+	switch {
+	case s == "@":
+		return zone, nil
+	case strings.HasSuffix(s, "."):
+		return ParseName(s)
+	default:
+		return zone.Child(s)
+	}
+}
+
 // Child prepends label to n.
 func (n Name) Child(label string) (Name, error) {
 	if n == "." {

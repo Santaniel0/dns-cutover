@@ -116,8 +116,10 @@ func Run(ctx context.Context, q querier, inv inventory.Inventory, cfg Config) (R
 	}
 
 	ask := func(ctx context.Context, j job) jobResult {
-		srv := cfg.Old[j.server]
-		if j.side == newSide {
+		var srv dnsq.Server
+		if j.side == oldSide {
+			srv = cfg.Old[j.server]
+		} else {
 			srv = cfg.New[j.server]
 		}
 		resp, err := q.Query(ctx, srv, questions[j.question])

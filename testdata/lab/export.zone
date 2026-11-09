@@ -1,0 +1,19 @@
+; Export downloaded from the old provider's control panel.
+$ORIGIN example.test.
+$TTL 3600
+@                    IN SOA   ns1.olddns.test. hostmaster.example.test. 2026110401 7200 3600 1209600 3600
+@                    IN NS    ns1.olddns.test.
+@                    IN NS    ns2.olddns.test.
+@                    IN A     192.0.2.10
+@                    IN MX    10 mail.example.test.
+@                    IN TXT   "v=spf1 mx include:_spf.mailhost.test -all"
+@                    IN CAA   0 issue "letsencrypt.org"
+@                    IN DNSKEY 257 3 13 D2ZxOKMcDgHyhrFXNuJbcFHQ5toN/LCirb1vX+JsgDdkNx/3ql8PavGYLS12nETwzApueZi5JY1NNexL2xFpbA==
+www                  IN CNAME example.test.
+mail                 IN A     192.0.2.25
+api                  IN A     192.0.2.30
+api                  IN A     192.0.2.31
+crm                  IN CNAME crm.saas-vendor.test.
+_dmarc               IN TXT   "v=DMARC1; p=quarantine; rua=mailto:dmarc@example.test"
+selector1._domainkey IN TXT   ( "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEALwx9Sp4jbF8uAt534Bj+8TR+Nl/51ilRpvLX7k3N6ylebGY3lJ5r3LPG+BYwL7JAKJHYdCJMUVuiesQtdiON3TBV9LIUDiX+nO2vPA9jQT7STd+M9OSdJqeDr5+xc7tkwq19yugGc4AvGj8A1t0LMvUSHQxnIRFuHLMxAUzMya17alyrmm2nNsPS3p1A4ET9g" "DSbTPRwKcnZ3lUJCImvqr66zl1JSF40pddfdbq92GkVPVts4d/lazR/DWd5S/c5BGzbMBHzjVjwY8mH8c6Syyrr8PdjbvWOWVFexq7h/X88lDmCjM0+96G/Pzl+lcDc/NmCY43+cgacyw==" )
+_autodiscover._tcp   IN SRV   0 0 443 autodiscover.mailhost.test.

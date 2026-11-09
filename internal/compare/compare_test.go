@@ -64,10 +64,12 @@ func testInventory(t *testing.T) inventory.Inventory {
 
 func TestRunAgainstServers(t *testing.T) {
 	oldSrv, newSrv := startServer(t, oldZone, nil), startServer(t, newZone, nil)
+	// One old and two new servers: the job table must index each side by
+	// its own length. Both new entries point at the same server.
 	cfg := Config{
 		Zone:        apex,
 		Old:         []dnsq.Server{{Host: "ns1.old.test.", Addr: oldSrv.Addr()}},
-		New:         []dnsq.Server{{Host: "ada.ns.new.test.", Addr: newSrv.Addr()}},
+		New:         []dnsq.Server{{Host: "ada.ns.new.test.", Addr: newSrv.Addr()}, {Host: "bob.ns.new.test.", Addr: newSrv.Addr()}},
 		Concurrency: 8,
 		Proxy:       proxyrange.Cloudflare(),
 	}

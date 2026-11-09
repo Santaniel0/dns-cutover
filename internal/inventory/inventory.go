@@ -61,8 +61,10 @@ type Entry struct {
 
 // Inventory is the final, sorted name list.
 type Inventory struct {
-	Zone    rr.Name    `json:"zone"`
-	Entries []Entry    `json:"entries"`
+	Zone    rr.Name `json:"zone"`
+	Entries []Entry `json:"entries"`
+	// Skipped counts zone file records outside the zone.
+	Skipped int        `json:"skipped_records,omitempty"`
 	Probe   ProbeStats `json:"probe"`
 }
 
@@ -82,6 +84,7 @@ func (inv Inventory) Count(src Source) int {
 type Collector struct {
 	zone    rr.Name
 	entries map[rr.Name]*Entry
+	skipped int
 }
 
 // NewCollector starts an inventory for zone with the apex already in it.
@@ -115,7 +118,7 @@ func (c *Collector) Add(name rr.Name, src Source, types ...rr.Type) error {
 // Inventory returns the collected names, apex first, then in DNS order of
 // their labels read right to left, which keeps a subdomain next to its parent.
 func (c *Collector) Inventory(probe ProbeStats) Inventory {
-	inv := Inventory{Zone: c.zone, Probe: probe, Entries: make([]Entry, 0, len(c.entries))}
+	inv := Inventory{Zone: c.zone, Probe: probe, Skipped: c.skipped, Entries: make([]Entry, 0, len(c.entries))}
 	for _, e := range c.entries {
 		slices.Sort(e.Types)
 		slices.Sort(e.Sources)
@@ -146,15 +149,16 @@ func skipType(t uint16) bool {
 
 // ReadZoneFile adds every owner name in a BIND-format zone file. Records
 // outside the zone (glue for other domains, stray lines from a combined
-// export) are counted and skipped rather than failing the run.
-func ReadZoneFile(r io.Reader, filename string, c *Collector) (skipped int, err error) {
+// export) are counted in Inventory.Skipped rather than failing the run.
+func ReadZoneFile(r io.Reader, filename string, c *Collector) error {
 	zp := dns.NewZoneParser(r, string(c.zone), filename)
 	for rec, ok := zp.Next(); ok; rec, ok = zp.Next() {
 		name := rr.Name(dns.CanonicalName(rec.Header().Name))
 		if !name.In(c.zone) {
-			skipped++
+			c.skipped++
 			continue
 		}
+		var err error
 		t := rec.Header().Rrtype
 		if skipType(t) || (t == dns.TypeNS && name == c.zone) {
 			err = c.Add(name, FromZoneFile)
@@ -162,13 +166,13 @@ func ReadZoneFile(r io.Reader, filename string, c *Collector) (skipped int, err 
 			err = c.Add(name, FromZoneFile, rr.Type(t))
 		}
 		if err != nil {
-			return skipped, err
+			return err
 		}
 	}
 	if err := zp.Err(); err != nil {
-		return skipped, fmt.Errorf("zone file %s: %w", filename, err)
+		return fmt.Errorf("zone file %s: %w", filename, err)
 	}
-	return skipped, nil
+	return nil
 }
 
 // ReadNames adds names listed one per line. Names without a trailing dot are
@@ -183,7 +187,7 @@ func ReadNames(r io.Reader, c *Collector) error {
 		if text == "" {
 			continue
 		}
-		name, err := qualify(text, c.zone)
+		name, err := rr.ParseRelative(text, c.zone)
 		if err != nil {
 			return fmt.Errorf("names line %d: %w", line, err)
 		}
@@ -195,15 +199,4 @@ func ReadNames(r io.Reader, c *Collector) error {
 		return fmt.Errorf("read names: %w", err)
 	}
 	return nil
-}
-
-func qualify(s string, zone rr.Name) (rr.Name, error) {
-	switch {
-	case s == "@":
-		return zone, nil
-	case strings.HasSuffix(s, "."):
-		return rr.ParseName(s)
-	default:
-		return zone.Child(s)
-	}
 }

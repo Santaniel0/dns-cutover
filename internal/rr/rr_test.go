@@ -69,6 +69,18 @@ func TestNameRelations(t *testing.T) {
 	}
 }
 
+func TestParseRelative(t *testing.T) {
+	zone := Name("example.test.")
+	for in, want := range map[string]Name{"@": zone, "www": "www.example.test.", "Mail.Example.Test.": "mail.example.test.", "_dmarc": "_dmarc.example.test."} {
+		if got, err := ParseRelative(in, zone); err != nil || got != want {
+			t.Errorf("ParseRelative(%q) = %q, %v; want %q", in, got, err, want)
+		}
+	}
+	if _, err := ParseRelative("a..b", zone); !errors.Is(err, ErrInvalidName) {
+		t.Errorf("err = %v", err)
+	}
+}
+
 func TestParseType(t *testing.T) {
 	tests := []struct {
 		in   string

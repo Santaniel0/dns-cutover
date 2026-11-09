@@ -26,8 +26,8 @@ var (
 type Server struct {
 	// Host is the nameserver's host name. It is empty when the server was
 	// given as a bare address, and then NS-name checks skip it.
-	Host rr.Name
-	Addr netip.AddrPort
+	Host rr.Name        `json:"host,omitempty"`
+	Addr netip.AddrPort `json:"addr"`
 }
 
 // String returns the host name when known, otherwise the address.

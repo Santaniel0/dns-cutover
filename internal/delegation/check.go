@@ -227,7 +227,7 @@ func (c *checker) checkDNSSEC(ctx context.Context) error {
 		c.add(finding.Finding{
 			Kind: finding.DNSSEC, Severity: finding.Blocker, Type: rr.TypeDS, Old: parentDS,
 			Detail: "the parent publishes DS but the new zone is unsigned; validating resolvers will return SERVFAIL for the whole domain. " +
-				"Remove the DS at the registrar and wait " + ttl + " (the DS TTL) before changing NS",
+				"Remove the DS at the registrar and wait out its TTL of " + ttl + " before changing NS",
 		})
 	default:
 		matched := matchDS(p.DS, keys)
@@ -235,7 +235,7 @@ func (c *checker) checkDNSSEC(ctx context.Context) error {
 			c.add(finding.Finding{
 				Kind: finding.DNSSEC, Severity: finding.Blocker, Type: rr.TypeDS, Old: parentDS, New: suggested,
 				Detail: "no DS at the parent matches a DNSKEY on the new servers; validating resolvers will return SERVFAIL. " +
-					"Replace the DS at the registrar with the one shown (or remove it) and wait " + ttl + " (the DS TTL) before changing NS",
+					"Replace the DS at the registrar with the one shown (or remove it) and wait out its TTL of " + ttl + " before changing NS",
 			})
 			return nil
 		}

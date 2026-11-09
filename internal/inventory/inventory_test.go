@@ -49,14 +49,13 @@ sub      IN NS  ns1.elsewhere.test.
 glue.other.test. IN A 192.0.2.1
 `
 	c := NewCollector(zone)
-	skipped, err := ReadZoneFile(strings.NewReader(text), "export.zone", c)
-	if err != nil {
+	if err := ReadZoneFile(strings.NewReader(text), "export.zone", c); err != nil {
 		t.Fatal(err)
 	}
-	if skipped != 1 {
-		t.Errorf("skipped = %d, want 1 out-of-zone record", skipped)
-	}
 	inv := c.Inventory(ProbeStats{})
+	if inv.Skipped != 1 {
+		t.Errorf("skipped = %d, want 1 out-of-zone record", inv.Skipped)
+	}
 	want := []string{"example.test.", "mail.example.test.", "_25._tcp.mail.example.test.", "sub.example.test.", "www.example.test."}
 	if got := names(inv); !slices.Equal(got, want) {
 		t.Fatalf("names = %v\nwant    %v", got, want)
@@ -80,7 +79,7 @@ glue.other.test. IN A 192.0.2.1
 
 func TestReadZoneFileSyntaxError(t *testing.T) {
 	c := NewCollector(zone)
-	_, err := ReadZoneFile(strings.NewReader("www IN A not-an-ip\n"), "bad.zone", c)
+	err := ReadZoneFile(strings.NewReader("www IN A not-an-ip\n"), "bad.zone", c)
 	if err == nil || !strings.Contains(err.Error(), "bad.zone") {
 		t.Fatalf("err = %v, want a parse error naming the file", err)
 	}
