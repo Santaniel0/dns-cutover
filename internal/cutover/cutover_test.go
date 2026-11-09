@@ -52,7 +52,7 @@ func testDeps() Deps {
 
 func spec(s lab.Server) dnsq.Spec {
 	ap := s.Addr()
-	return dnsq.Spec{Host: rr.Name(s.Host), Addr: ap.Addr(), Port: ap.Port()}
+	return dnsq.Spec{Host: s.Host, Addr: ap.Addr(), Port: ap.Port()}
 }
 
 func labConfig(t *testing.T, sc lab.Scenario) Config {

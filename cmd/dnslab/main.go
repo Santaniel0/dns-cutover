@@ -46,9 +46,9 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 
 	fmt.Fprintf(stdout, "dnslab: scenario %s, zone %s\n", sc, lab.Zone)
 	for _, s := range append([]lab.Server{l.Parent, l.Old}, l.New...) {
-		name := s.Host
+		name := string(s.Host)
 		if name == "" {
-			name = "zone " + s.Zone
+			name = "zone " + string(s.Zone)
 		}
 		fmt.Fprintf(stdout, "  %-7s %-18s %s\n", s.Role, name, s.Addr())
 	}

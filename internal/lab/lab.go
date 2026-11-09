@@ -12,10 +12,11 @@ import (
 	"strings"
 
 	"github.com/Santaniel0/dns-cutover/internal/dnstest"
+	"github.com/Santaniel0/dns-cutover/internal/rr"
 )
 
 // Zone is the zone being moved in the lab.
-const Zone = "example.test."
+const Zone rr.Name = "example.test."
 
 // Scenario picks which version of the new provider's zone is served.
 type Scenario uint8
@@ -52,8 +53,9 @@ func ParseScenario(s string) (Scenario, error) {
 // Server is one running lab server.
 type Server struct {
 	Role string
-	Host string
-	Zone string
+	// Host is empty for the parent, which is addressed by IP only.
+	Host rr.Name
+	Zone rr.Name
 	srv  *dnstest.Server
 }
 
@@ -74,8 +76,10 @@ type Lab struct {
 func Start(dir string, sc Scenario, basePort int) (*Lab, error) {
 	l := &Lab{Dir: dir}
 	plan := []struct {
-		dst                    *Server
-		role, host, zone, file string
+		dst        *Server
+		role       string
+		host, zone rr.Name
+		file       string
 	}{
 		{&l.Parent, "parent", "", "test.", filepath.Join(dir, sc.String(), "parent.zone")},
 		{&l.Old, "old", "ns1.olddns.test.", Zone, filepath.Join(dir, "old.zone")},
@@ -83,7 +87,7 @@ func Start(dir string, sc Scenario, basePort int) (*Lab, error) {
 		{nil, "new", "ns2.newdns.test.", Zone, filepath.Join(dir, sc.String(), "new-b.zone")},
 	}
 	for i, p := range plan {
-		z, err := dnstest.LoadZone(p.zone, p.file)
+		z, err := dnstest.LoadZone(string(p.zone), p.file)
 		if err != nil {
 			return nil, errors.Join(err, l.Close())
 		}
@@ -117,13 +121,13 @@ func (l *Lab) Close() error {
 
 // CheckArgs returns the dnscutover arguments that point a check at the lab.
 func (l *Lab) CheckArgs() []string {
-	pin := func(s Server) string { return strings.TrimSuffix(s.Host, ".") + "=" + s.Addr().String() }
+	pin := func(s Server) string { return strings.TrimSuffix(string(s.Host), ".") + "=" + s.Addr().String() }
 	news := make([]string, 0, len(l.New))
 	for _, s := range l.New {
 		news = append(news, pin(s))
 	}
 	return []string{
-		"check", strings.TrimSuffix(Zone, "."),
+		"check", strings.TrimSuffix(string(Zone), "."),
 		"--parent", l.Parent.Addr().String(),
 		"--old", pin(l.Old),
 		"--new", strings.Join(news, ","),
