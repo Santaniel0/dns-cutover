@@ -1,0 +1,7 @@
+/dnscutover
+/dnscutover.exe
+/dnslab
+/dnslab.exe
+/dist/
+*.test
+*.out
