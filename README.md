@@ -1,5 +1,7 @@
 # dns-cutover
 
+[![CI](https://github.com/Santaniel0/dns-cutover/actions/workflows/ci.yml/badge.svg)](https://github.com/Santaniel0/dns-cutover/actions/workflows/ci.yml)
+
 Проверка перед сменой NS-серверов домена. `dnscutover` напрямую опрашивает каждый старый и каждый новый авторитативный сервер, сравнивает зону запись за записью и проверяет делегирование и DNSSEC. Ничего не меняет, ключи API провайдеров не нужны.
 
 ## Зачем
@@ -18,6 +20,8 @@
 `dnscutover check` делает эту проверку одной командой и в конце пишет `READY` или `NOT READY`. Код выхода можно использовать как условие перед сменой NS.
 
 ## Установка
+
+Готовые сборки для Linux, Windows и macOS лежат на странице [Releases](https://github.com/Santaniel0/dns-cutover/releases/latest), Go для них не нужен. Собрать самому через Go:
 
 Нужен Go 1.27.
 
